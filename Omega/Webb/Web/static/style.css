@@ -1,0 +1,67 @@
+/* Removed custom styles in favor of Bootstrap classes */
+
+/* Optional: Custom overrides or additional styles */
+body {
+  background-color: #f0f0f0; /* Keep background color customization */
+}
+
+.container {
+  max-width: 800px;
+  /* Optional: Limit container width */
+}
+
+/* Add fade-in animation for headings */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+h1,
+h2 {
+  animation: fadeIn 1s ease-in-out;
+}
+
+/* Add hover animation for buttons */
+button {
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  background-color: #4caf50; /* Optional: Custom button color */
+}
+
+button:hover {
+  transform: scale(1.05);
+  background-color: #45a049; /* Optional: Custom hover effect */
+}
+
+/* Add slide-in animation for the form */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animated-form {
+  animation: slideIn 0.8s ease-out;
+  max-width: 800px; /* Increase form width */
+
+  padding: 1rem; /* Maintain reduced padding for lower height */
+}
+
+.form-group-row {
+  display: flex;
+  gap: 1rem; /* Add spacing between grouped fields */
+}
+
+.form-group-row .form-group {
+  flex: 1; /* Ensure fields in a row take equal space */
+}

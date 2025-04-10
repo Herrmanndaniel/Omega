@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="bg-light">
+    <div class="container d-flex justify-content-center align-items-center vh-100">
+        <div class="card shadow-lg p-5 rounded-4 w-100 animated-form">
+            <h2 class="text-center mb-4 fw-bold text-success animated-heading">Spotřeba vozu</h2>
+            <form id="predictionForm" class="needs-validation" novalidate>
+                <div class="form-group-row">
+                    <div class="mb-3 form-group">
+                        <label for="year" class="form-label">Rok uvedení do provozu</label>
+                        <input type="number" id="year" name="year" class="form-control" min="1950" max="2025" required>
+                        <div class="invalid-feedback">Zadejte rok mezi 1950 a 2025.</div>
+                    </div>
+                </div>
+
+                <div class="form-group-row">
+                    <div class="mb-3 form-group">
+                        <label for="body_type" class="form-label">Karoserie</label>
+                        <select id="body_type" name="body_type" class="form-select" required>
+                            {% for body_type in body_types %}
+                            <option value="{{ body_type }}">{{ body_type }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">Vyberte typ karoserie.</div>
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label for="fuel_type" class="form-label">Palivo</label>
+                        <select id="fuel_type" name="fuel_type" class="form-select" required>
+                            {% for fuel_type in fuel_types %}
+                            <option value="{{ fuel_type }}">{{ fuel_type }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">Vyberte typ paliva.</div>
+                    </div>
+                </div>
+
+                <div class="form-group-row">
+                    <div class="mb-3 form-group">
+                        <label for="engine_type" class="form-label">Motor</label>
+                        <select id="engine_type" name="engine_type" class="form-select" required>
+                            {% for engine_type in engine_types %}
+                            <option value="{{ engine_type }}">{{ engine_type }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">Vyberte typ motoru.</div>
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label for="horsepower" class="form-label">Výkon (kW)</label>
+                        <input type="number" id="horsepower" name="horsepower" class="form-control" min="1" required>
+                        <div class="invalid-feedback">Zadejte kladné číslo pro výkon (kW).</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 py-2">Spotřeba</button>
+            </form>
+
+            <div id="result" class="mt-4 text-center fs-4 text-success fw-semibold"></div>
+
+            <button onclick="window.location.href='{{ url_for('index') }}'" class="btn btn-secondary w-100 mt-3">Zpět na
+                úvodní stránku</button>
+        </div>
+    </div>
+
+    <script>
+        // Add Bootstrap validation
+        (function () {
+            'use strict';
+            const form = document.getElementById('predictionForm');
+            form.addEventListener('submit', async (e) => {
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    alert('Prosím vyplňte všechna povinná pole správně.');
+                } else {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const response = await fetch('/predict', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    if (data.fuel_consumption !== undefined) {
+                        const roundedConsumption = data.fuel_consumption.toFixed(1);
+                        document.getElementById('result').innerHTML = `
+                            <h3 class="mt-3">Odhadovaná spotřeba: <span class="text-primary">${roundedConsumption} l/100km</span></h3>
+                        `;
+                    } else {
+                        document.getElementById('result').innerHTML = `
+                            <h3 class="mt-3 text-danger">Chyba: Nelze získat odhadovanou spotřebu.</h3>
+                        `;
+                    }
+                }
+                form.classList.add('was-validated');
+            });
+
+            fetch('/static/form-data.csv')
+                .then(response => response.text())
+                .then(data => {
+                    const rows = data.split('\n').slice(1); // Skip header
+                    const motors = new Set();
+                    const fuels = new Set();
+                    const bodies = new Set();
+
+                    rows.forEach(row => {
+                        const [motor, fuel, body] = row.split(',');
+                        motors.add(motor.trim());
+                        fuels.add(fuel.trim());
+                        bodies.add(body.trim());
+                    });
+
+                    const motorSelect = document.getElementById('engine_type');
+                    const fuelSelect = document.getElementById('fuel_type');
+                    const bodySelect = document.getElementById('body_type');
+
+                    motors.forEach(motor => motorSelect.add(new Option(motor, motor)));
+                    fuels.forEach(fuel => fuelSelect.add(new Option(fuel, fuel)));
+                    bodies.forEach(body => bodySelect.add(new Option(body, body)));
+                });
+        })();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
